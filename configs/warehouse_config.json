@@ -1,0 +1,96 @@
+{
+  "warehouse": {
+    "name": "Deterministic Fulfillments Twin",
+    "width": 30,
+    "height": 20
+  },
+  "robots": [
+    {
+      "robot_id": "robot_01",
+      "start_x": 0,
+      "start_y": 0,
+      "max_battery": 100.0
+    },
+    {
+      "robot_id": "robot_02",
+      "start_x": 0,
+      "start_y": 5,
+      "max_battery": 100.0
+    },
+    {
+      "robot_id": "robot_03",
+      "start_x": 0,
+      "start_y": 10,
+      "max_battery": 100.0
+    }
+  ],
+  "shelves": [
+    {
+      "shelf_id": "shelf_A1",
+      "x": 5,
+      "y": 2,
+      "capacity": 10
+    },
+    {
+      "shelf_id": "shelf_B1",
+      "x": 10,
+      "y": 2,
+      "capacity": 10
+    },
+    {
+      "shelf_id": "shelf_C1",
+      "x": 15,
+      "y": 2,
+      "capacity": 10
+    }
+  ],
+  "charging_stations": [
+    {
+      "station_id": "charger_01",
+      "x": 0,
+      "y": 19,
+      "charge_rate": 15.0,
+      "capacity": 2
+    }
+  ],
+  "obstacles": [
+    {
+      "obstacle_id": "pillar_01",
+      "x": 12,
+      "y": 8,
+      "name": "Structural Pillar"
+    },
+    {
+      "obstacle_id": "pillar_02",
+      "x": 12,
+      "y": 9,
+      "name": "Structural Pillar"
+    }
+  ],
+  "packages": [
+    {
+      "package_id": "pkg_001",
+      "source_x": 5,
+      "source_y": 2,
+      "dest_x": 28,
+      "dest_y": 15,
+      "weight": 2.5
+    },
+    {
+      "package_id": "pkg_002",
+      "source_x": 10,
+      "source_y": 2,
+      "dest_x": 28,
+      "dest_y": 18,
+      "weight": 1.2
+    },
+    {
+      "package_id": "pkg_003",
+      "source_x": 15,
+      "source_y": 2,
+      "dest_x": 29,
+      "dest_y": 5,
+      "weight": 3.0
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+# ==========================================
+# Python & Bytecode
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==========================================
+# Conda & Virtual Environments
+# ==========================================
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+conda-meta/
+*.conda
+
+# ==========================================
+# PyTorch, Checkpoints & Model Artifacts
+# ==========================================
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+*.bin
+
+# ==========================================
+# TensorBoard & Experiment Runs
+# ==========================================
+runs/
+*.tfevents*
+events.out.tfevents.*
+wandb/
+
+# ==========================================
+# Jupyter Notebooks & Checkpoints
+# ==========================================
+.ipynb_checkpoints
+*-checkpoint.ipynb
+
+# ==========================================
+# Testing & Code Quality Tools
+# ==========================================
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.noserc
+nosetests.xml
+coverage.xml
+
+# ==========================================
+# IDE & Code Editors
+# ==========================================
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains (PyCharm, WebStorm, etc.)
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Project IDX / Antigravity
+.gemini/
+
+# ==========================================
+# Operating System Files
+# ==========================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+.AppleDB
+.AppleDesktop
+
+# ==========================================
+# Node.js / Frontend / Web
+# ==========================================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/.out/
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ==========================================
+# Docker & Cloud Build Cache
+# ==========================================
+.dockerignore
+*.tar
+*.tar.gz
+
+# ==========================================
+# Secrets & Environment Variables
+# ==========================================
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+secrets.json
