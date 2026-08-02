@@ -1,71 +1,61 @@
-"""FailureClassifier module categorizing episode outcome failure modes."""
-
-from collections import Counter
-from typing import Dict, List
-
-from research.trajectory_recorder import EpisodeTrajectory
+from enum import Enum
+from typing import Any, Dict, List
 
 
-class FailureMode:
-    """Enumeration constants for episode failure modes."""
-
-    SUCCESS = "SUCCESS"
-    TIMEOUT = "TIMEOUT"
-    EXCESSIVE_COLLISIONS = "EXCESSIVE_COLLISIONS"
-    BATTERY_DEPLETED = "BATTERY_DEPLETED"
-    NEVER_FOUND_PACKAGE = "NEVER_FOUND_PACKAGE"
-    PICKED_BUT_NEVER_DELIVERED = "PICKED_BUT_NEVER_DELIVERED"
-    PASSIVE_WAIT = "PASSIVE_WAIT"
-    OSCILLATION = "OSCILLATION"
+class FailureMode(Enum):
+    SUCCESS = "success"
+    EXCESSIVE_COLLISIONS = "excessive_collisions"
+    NEVER_FOUND_PACKAGE = "never_found_package"
+    CRITIC_COLLAPSE = "critic_collapse"
+    BATTERY_DEPLETION = "battery_depletion"
+    CORRIDOR_DEADLOCK = "corridor_deadlock"
 
 
 class FailureClassifier:
-    """Classifies episode execution outcomes into explicit failure taxonomy categories."""
+    """Classifies trajectory failure modes for policy analysis."""
 
     @staticmethod
-    def classify_episode(trajectory: EpisodeTrajectory) -> str:
-        """Determines primary failure mode for a recorded trajectory."""
-        if trajectory.is_success:
+    def classify_episode(trajectory: Any) -> FailureMode:
+        if getattr(trajectory, "is_success", False):
             return FailureMode.SUCCESS
-
-        # 1. Excessive Collisions (>= 5 collisions)
-        if trajectory.total_collisions >= 5:
+        if getattr(trajectory, "total_collisions", 0) > 0:
             return FailureMode.EXCESSIVE_COLLISIONS
-
-        steps = trajectory.steps
-        if not steps:
-            return FailureMode.TIMEOUT
-
-        # 3. Passive Wait Policy (> 50% steps spent waiting)
-        wait_count = sum(1 for s in steps if s.action == 4)
-        if wait_count / len(steps) > 0.5:
-            return FailureMode.PASSIVE_WAIT
-
-        # 4. Oscillation (back-and-forth between same 2 positions >= 5 times)
-        if len(steps) >= 6:
-            positions = [s.position for s in steps]
-            osc_count = 0
-            for i in range(len(positions) - 2):
-                if positions[i] == positions[i + 2] and positions[i] != positions[i + 1]:
-                    osc_count += 1
-            if osc_count >= 5:
-                return FailureMode.OSCILLATION
-
-        # 5. Picked but never delivered
-        if trajectory.total_pickups > 0 and trajectory.total_deliveries == 0:
-            return FailureMode.PICKED_BUT_NEVER_DELIVERED
-
-        # 6. Never found package
-        if trajectory.total_pickups == 0:
-            return FailureMode.NEVER_FOUND_PACKAGE
-
-        return FailureMode.TIMEOUT
+        return FailureMode.NEVER_FOUND_PACKAGE
 
     @staticmethod
-    def summarize_failure_distribution(trajectories: List[EpisodeTrajectory]) -> Dict[str, int]:
-        """Summarizes failure mode distribution counts across all trajectories."""
-        counts = Counter()
-        for t in trajectories:
-            mode = FailureClassifier.classify_episode(t)
-            counts[mode] += 1
-        return dict(counts)
+    def classify_trajectory(trajectory: List[Dict[str, Any]]) -> FailureMode:
+        if not trajectory:
+            return FailureMode.SUCCESS
+        last_step = trajectory[-1]
+        if last_step.get("is_collision", False):
+            return FailureMode.CORRIDOR_DEADLOCK
+        return FailureMode.SUCCESS
+
+
+class MAPPOFailureClassifier:
+    """Automatically classifies MAPPO failure modes from training metrics."""
+
+    @staticmethod
+    def classify_failure_mode(
+        critic_loss: float,
+        explained_variance: float,
+        collisions: int,
+        n_robots: int,
+    ) -> Dict[str, Any]:
+        """Classifies failure modes: Critic Collapse, Value Saturation, Coordination Deadlock, State Explosion."""
+        failure_modes = []
+
+        if explained_variance < 0.0:
+            failure_modes.append("CRITIC_EXPLAINED_VARIANCE_COLLAPSE")
+        if critic_loss > 10000.0:
+            failure_modes.append("CRITIC_VALUE_EXPLOSION")
+        if collisions > 100:
+            failure_modes.append("COORDINATION_DEADLOCK")
+        if n_robots >= 8:
+            failure_modes.append("CENTRALIZED_STATE_DIMENSION_EXPLOSION")
+
+        return {
+            "has_failure": len(failure_modes) > 0,
+            "failure_modes": failure_modes,
+            "primary_failure": failure_modes[0] if failure_modes else "NONE",
+        }
