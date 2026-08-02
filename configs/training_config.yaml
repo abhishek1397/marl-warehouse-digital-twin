@@ -1,0 +1,48 @@
+# MARL Warehouse Digital Twin Training Configuration
+
+experiment_name: "marl_warehouse_benchmark"
+seed: 42
+device: "cpu"
+
+env:
+  grid_width: 20
+  grid_height: 20
+  num_robots: 3
+  num_tasks: 10
+  max_episode_steps: 200
+  observation_mode: "hybrid"
+  reward_mode: "hybrid"
+  comm_mode: "radius"
+
+training:
+  total_timesteps: 100000
+  learning_rate: 0.0003
+  gamma: 0.99
+  batch_size: 64
+  buffer_size: 10000
+
+eval:
+  eval_interval: 5000
+  eval_episodes: 10
+
+logging:
+  tensorboard: true
+  csv: true
+  stdout: true
+  file: true
+  log_interval: 100
+
+checkpoint:
+  save_interval: 5000
+  save_best: true
+  max_checkpoints: 5
+
+network:
+  hidden_dim: 128
+  num_layers: 2
+  activation: "relu"
+
+optimizer:
+  name: "adam"
+  lr: 0.0003
+  weight_decay: 0.0

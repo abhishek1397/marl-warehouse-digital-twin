@@ -1,0 +1,10 @@
+metric,value
+success_rate,0.0
+pickup_rate,0.0
+delivery_rate,0.0
+mean_completion_time,0.0
+mean_distance_travelled,200.0
+mean_battery_consumption,39.800000000000566
+mean_collisions,0.0
+mean_idle_pct,0.0
+mean_reward,-10.63999999999998
