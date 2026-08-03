@@ -6,7 +6,7 @@ import { AppRouter } from './router';
 
 export const App: React.FC = () => {
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <div className="flex flex-col min-h-screen bg-background text-slate-100 font-sans">
         <Navbar />
         <main className="flex-grow">
