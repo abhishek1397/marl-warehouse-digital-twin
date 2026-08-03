@@ -84,7 +84,8 @@ class ActionMaskGenerator:
         if self.config.mask_invalid_drop:
             is_drop_valid = False
             if robot.carrying_package is not None and task is not None:
-                if curr_pos == task.drop_position:
+                dist_to_drop = abs(curr_pos.x - task.drop_position.x) + abs(curr_pos.y - task.drop_position.y)
+                if dist_to_drop <= 1 or curr_pos == task.drop_position:
                     is_drop_valid = True
             mask[6] = is_drop_valid
 

@@ -12,6 +12,8 @@ export const SimulationControls: React.FC = () => {
     gridSize,
     robotCount,
     packageCount,
+    showDebugOverlay,
+    toggleDebugOverlay,
     setRunning,
     setPaused,
     setSpeed,
@@ -41,6 +43,16 @@ export const SimulationControls: React.FC = () => {
           <Sliders className="w-4 h-4 mr-2 text-accent" />
           Simulation Control
         </h3>
+        <button
+          onClick={toggleDebugOverlay}
+          className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors ${
+            showDebugOverlay
+              ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+              : 'bg-slate-800 text-slate-400 border-slate-700'
+          }`}
+        >
+          Debug Overlay: {showDebugOverlay ? 'ON' : 'OFF'}
+        </button>
       </div>
 
       {/* Algorithm Selector */}

@@ -55,6 +55,31 @@ export const WarehouseGrid: React.FC = () => {
           <GridCell key={`cell_${cell.x}_${cell.y}`} x={cell.x} y={cell.y} cellSize={cellSize} />
         ))}
 
+        {/* Render Planned Path Lines in Unique Robot Colors */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none z-10"
+          style={{ width: gridSize * cellSize, height: gridSize * cellSize }}
+        >
+          {robots.map((robot) => {
+            if (!robot.plannedPath || robot.plannedPath.length < 2) return null;
+            const pointsStr = robot.plannedPath
+              .map(([ptX, ptY]) => `${ptX * cellSize + cellSize / 2},${ptY * cellSize + cellSize / 2}`)
+              .join(' ');
+            return (
+              <polyline
+                key={`path_${robot.id}`}
+                points={pointsStr}
+                fill="none"
+                stroke={robot.color}
+                strokeWidth="2.5"
+                strokeDasharray="5,4"
+                strokeLinecap="round"
+                opacity="0.85"
+              />
+            );
+          })}
+        </svg>
+
         {/* Render Static/Item Entities */}
         {gridEntities.map((entity) => {
           if (entity.type === 'shelf') return <ShelfSprite key={entity.id} entity={entity} cellSize={cellSize} />;

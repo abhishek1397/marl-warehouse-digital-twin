@@ -119,15 +119,23 @@ class WarehouseParallelEnv(ParallelEnv):
         self._warehouse.place_object(station_pos, station, cell_type=CellType.CHARGING_STATION)
         self._charging_stations["charger_0"] = station
 
-        # 3. Spawn Shelves & Obstacles
-        shelf_pos = Position(w // 2, 2)
-        shelf = Shelf("shelf_0", shelf_pos, capacity=20)
-        self._warehouse.place_object(shelf_pos, shelf, cell_type=CellType.SHELF)
-        self._shelves["shelf_0"] = shelf
+        # 3. Spawn Shelves & Obstacles across grid matrix
+        shelf_positions = [
+            Position(max(1, w // 4), max(1, h // 4)),
+            Position(min(w - 2, (3 * w) // 4), max(1, h // 4)),
+            Position(max(1, w // 4), min(h - 2, (3 * h) // 4)),
+            Position(min(w - 2, (3 * w) // 4), min(h - 2, (3 * h) // 4)),
+        ]
+        for s_idx, s_pos in enumerate(shelf_positions):
+            if self._warehouse.is_in_bounds(s_pos):
+                shelf = Shelf(f"shelf_{s_idx}", s_pos, capacity=20)
+                self._warehouse.place_object(s_pos, shelf, cell_type=CellType.SHELF)
+                self._shelves[f"shelf_{s_idx}"] = shelf
 
-        obs_pos = Position(w // 2, 3)
-        obs = Obstacle("obs_0", obs_pos)
-        self._warehouse.place_object(obs_pos, obs, cell_type=CellType.OBSTACLE)
+        obs_pos = Position(w // 2, h // 2)
+        if self._warehouse.is_in_bounds(obs_pos):
+            obs = Obstacle("obs_0", obs_pos)
+            self._warehouse.place_object(obs_pos, obs, cell_type=CellType.OBSTACLE)
 
         # 4. Spawn Fleet Robots (robot_0, robot_1, ..., robot_n)
         for idx, agent_id in enumerate(self.possible_agents):
@@ -138,10 +146,18 @@ class WarehouseParallelEnv(ParallelEnv):
 
         self.agent_manager.initialize_agents(self._fleet)
 
-        # 5. Spawn Tasks & Packages
+        # 5. Spawn Tasks & Packages targeting distinct shelves & delivery depots
+        drop_depots = [
+            Position(w - 1, h - 1),
+            Position(0, h - 1),
+            Position(w - 1, 0),
+        ]
+        shelves_keys = list(self._shelves.keys())
+
         for t_idx in range(1, self.config.num_tasks + 1):
-            src_pos = Position(w // 2, 2)
-            dst_pos = Position(w - 1, h - 1)
+            s_key = shelves_keys[(t_idx - 1) % len(shelves_keys)]
+            src_pos = self._shelves[s_key].position
+            dst_pos = drop_depots[(t_idx - 1) % len(drop_depots)]
             pkg = Package(f"pkg_{t_idx:02d}", source_position=src_pos, destination_position=dst_pos)
 
             self._task_manager.create_task(

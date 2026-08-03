@@ -124,7 +124,7 @@ class WarehouseGymEnv(gym.Env):
 
         # 2. Place Shelves & Obstacles
         shelf_pos = Position(w // 2, 2)
-        shelf = Shelf("shelf_0", shelf_pos, capacity=10)
+        shelf = Shelf("shelf_0", shelf_pos, capacity=20)
         self._warehouse.place_object(shelf_pos, shelf, cell_type=CellType.SHELF)
         self._shelves["shelf_0"] = shelf
 

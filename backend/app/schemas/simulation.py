@@ -22,6 +22,10 @@ class RobotStateSchema(BaseModel):
     battery_level: float
     state: str
     assigned_task: Optional[str] = None
+    target_position: Optional[List[int]] = None
+    current_action: Optional[str] = None
+    is_collision: bool = False
+    planned_path: Optional[List[List[int]]] = None
 
 
 class GridEntitySchema(BaseModel):

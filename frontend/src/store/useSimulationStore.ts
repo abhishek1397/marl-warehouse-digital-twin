@@ -8,8 +8,12 @@ export interface RobotEntity {
   x: number;
   y: number;
   battery: number;
-  state: 'MOVING_TO_PICKUP' | 'CARRYING_PACKAGE' | 'CHARGING' | 'IDLE';
+  state: string;
   assignedPackageId?: string;
+  targetPosition?: [number, number];
+  currentAction?: string;
+  isCollision?: boolean;
+  plannedPath?: [number, number][];
   color: string;
 }
 
@@ -37,6 +41,7 @@ interface SimulationStoreState {
   algorithm: AlgorithmType;
   isRunning: boolean;
   isPaused: boolean;
+  showDebugOverlay: boolean;
   speed: number;
   gridSize: number;
   robotCount: number;
@@ -48,6 +53,7 @@ interface SimulationStoreState {
   setAlgorithm: (algorithm: AlgorithmType) => Promise<void>;
   setRunning: (isRunning: boolean) => Promise<void>;
   setPaused: (isPaused: boolean) => Promise<void>;
+  toggleDebugOverlay: () => void;
   setSpeed: (speed: number) => void;
   setGridSize: (size: number) => Promise<void>;
   setRobotCount: (count: number) => Promise<void>;
@@ -58,12 +64,13 @@ interface SimulationStoreState {
   initializeBackendSimulation: () => Promise<void>;
 }
 
-const colors = ['#3b82f6', '#10b981', '#00f0ff', '#f59e0b', '#8b5cf6', '#ec4899'];
+const colors = ['#3b82f6', '#22c55e', '#f97316', '#a855f7', '#00f0ff', '#ec4899'];
 
 export const useSimulationStore = create<SimulationStoreState>((set, get) => ({
   algorithm: 'Spatial MAPPO',
   isRunning: false,
   isPaused: false,
+  showDebugOverlay: true,
   speed: 1,
   gridSize: 8,
   robotCount: 2,
@@ -83,22 +90,23 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => ({
     policyEntropy: 1.0,
   },
 
+  toggleDebugOverlay: () => set((state) => ({ showDebugOverlay: !state.showDebugOverlay })),
+
   syncStateFromBackend: (apiState) => {
     if (!apiState || !apiState.is_initialized) return;
 
     const mappedRobots: RobotEntity[] = apiState.robots.map((r, i) => {
-      let stateName: any = 'IDLE';
-      if (r.state.includes('PICKUP')) stateName = 'MOVING_TO_PICKUP';
-      else if (r.state.includes('DROP')) stateName = 'CARRYING_PACKAGE';
-      else if (r.state.includes('CHARGE')) stateName = 'CHARGING';
-
       return {
         id: r.id,
         x: r.position[0],
         y: r.position[1],
         battery: Number(r.battery_level.toFixed(1)),
-        state: stateName,
+        state: r.state,
         assignedPackageId: r.assigned_task,
+        targetPosition: (r as any).target_position ? (r as any).target_position : undefined,
+        currentAction: (r as any).current_action ? (r as any).current_action : undefined,
+        isCollision: Boolean((r as any).is_collision),
+        plannedPath: (r as any).planned_path ? (r as any).planned_path : undefined,
         color: colors[i % colors.length],
       };
     });

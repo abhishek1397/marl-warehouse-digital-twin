@@ -106,6 +106,7 @@ class SimulationService:
 
             next_obs, rewards, terminations, truncations, infos = self.env.step(actions_dict)
             self.step_count += 1
+            self._log_telemetry(actions_dict, rewards, infos)
 
             for agent_id, info in infos.items():
                 if not info.get("action_valid", True):
@@ -116,6 +117,88 @@ class SimulationService:
             self.obs_dict, self.info_dict = next_obs, infos
 
         return self.get_state()
+
+    def _log_telemetry(self, actions_dict: Dict[str, int], rewards: Dict[str, float], infos: Dict[str, Any]) -> None:
+        """Logs per-robot per-timestep telemetry to CSV file."""
+        import os, csv
+        log_dir = os.path.join(os.getcwd(), "data", "logs")
+        os.makedirs(log_dir, exist_ok=True)
+        csv_path = os.path.join(log_dir, "runtime_telemetry.csv")
+        file_exists = os.path.exists(csv_path)
+
+        from marl.action import ActionMapper
+        action_mapper = ActionMapper()
+
+        with open(csv_path, "a", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow([
+                    "step",
+                    "robot_id",
+                    "position",
+                    "observation_summary",
+                    "target_position",
+                    "assigned_package",
+                    "fsm_state",
+                    "selected_action",
+                    "reward",
+                    "collision_flag",
+                    "planner_waypoint",
+                ])
+
+            from backend.app.services.algorithm_service import AlgorithmService
+
+            for k, robot in self.env._fleet.items():
+                pos_str = f"({robot.position.x},{robot.position.y})"
+                obs = self.obs_dict.get(k)
+                obs_summary = f"pos:{pos_str}|battery:{robot.battery_level:.1f}" if obs is not None else "N/A"
+
+                t = robot.assigned_task
+                target_str = "None"
+                pkg_str = t.task_id if t else "None"
+                if t:
+                    if getattr(robot, "has_package", False) or getattr(robot, "carrying_package", None) is not None:
+                        target_str = f"({t.drop_position.x},{t.drop_position.y})"
+                    else:
+                        target_str = f"({t.pickup_position.x},{t.pickup_position.y})"
+
+                state_str = str(robot.state.name if hasattr(robot.state, "name") else robot.state)
+                if "CHARGE" in state_str:
+                    fsm = "CHARGING"
+                elif t:
+                    if getattr(robot, "carrying_package", None) is not None or getattr(robot, "has_package", False):
+                        fsm = "DELIVERING" if robot.position == t.drop_position else "MOVING_TO_DELIVERY"
+                    else:
+                        dist = abs(robot.position.x - t.pickup_position.x) + abs(robot.position.y - t.pickup_position.y)
+                        fsm = "PICKING" if dist <= 1 else "MOVING_TO_PACKAGE"
+                elif "IDLE" in state_str:
+                    fsm = "IDLE"
+                else:
+                    fsm = "WAITING"
+
+                act_idx = actions_dict.get(k, 4)
+                act_name = action_mapper.ACTION_MAP.get(act_idx, "STAY").name if act_idx in action_mapper.ACTION_MAP else ("PICK" if act_idx == 5 else ("DROP" if act_idx == 6 else "STAY"))
+
+                rw = float(rewards.get(k, 0.0))
+                inf = infos.get(k, {})
+                coll = not inf.get("action_valid", True)
+
+                path = AlgorithmService._last_planned_paths.get(k, [])
+                waypoint_str = f"({path[1][0]},{path[1][1]})" if path and len(path) > 1 else pos_str
+
+                writer.writerow([
+                    self.step_count,
+                    k,
+                    pos_str,
+                    obs_summary,
+                    target_str,
+                    pkg_str,
+                    fsm,
+                    act_name,
+                    f"{rw:.2f}",
+                    coll,
+                    waypoint_str,
+                ])
 
     def get_state(self) -> SimulationStateResponse:
         """Constructs current simulation state response."""
@@ -150,19 +233,59 @@ class SimulationService:
             battery_levels.append(b_level)
             state_str = str(robot.state.name if hasattr(robot.state, "name") else robot.state)
 
-            if "IDLE" in state_str:
+            # Standard FSM States: IDLE, MOVING_TO_PACKAGE, PICKING, MOVING_TO_DELIVERY, DELIVERING, CHARGING, WAITING
+            if "CHARGE" in state_str:
+                fsm_state = "CHARGING"
+            elif robot.assigned_task:
+                task = robot.assigned_task
+                if getattr(robot, "carrying_package", None) is not None or getattr(robot, "has_package", False):
+                    if robot.position == task.drop_position:
+                        fsm_state = "DELIVERING"
+                    else:
+                        fsm_state = "MOVING_TO_DELIVERY"
+                else:
+                    dist_to_pickup = abs(robot.position.x - task.pickup_position.x) + abs(robot.position.y - task.pickup_position.y)
+                    if dist_to_pickup <= 1:
+                        fsm_state = "PICKING"
+                    else:
+                        fsm_state = "MOVING_TO_PACKAGE"
+            elif "IDLE" in state_str:
+                fsm_state = "IDLE"
+            else:
+                fsm_state = "WAITING"
+
+            if fsm_state == "IDLE":
                 idle_count += 1
 
             pkg_id = robot.assigned_task.task_id if robot.assigned_task else None
             r_id = getattr(robot, "robot_id", getattr(robot, "id", k))
+
+            target_pos_arr = None
+            if robot.assigned_task:
+                t = robot.assigned_task
+                if getattr(robot, "has_package", False) or getattr(robot, "carrying_package", None) is not None:
+                    target_pos_arr = [t.drop_position.x, t.drop_position.y]
+                else:
+                    target_pos_arr = [t.pickup_position.x, t.pickup_position.y]
+
+            last_info = self.info_dict.get(k, {})
+            last_act_name = last_info.get("action_name", "IDLE")
+            is_coll = not last_info.get("action_valid", True)
+
+            from backend.app.services.algorithm_service import AlgorithmService
+            path_arr = AlgorithmService._last_planned_paths.get(k, None)
 
             robots_list.append(
                 RobotStateSchema(
                     id=r_id,
                     position=pos,
                     battery_level=b_level,
-                    state=state_str,
+                    state=fsm_state,
                     assigned_task=pkg_id,
+                    target_position=target_pos_arr,
+                    current_action=last_act_name,
+                    is_collision=is_coll,
+                    planned_path=path_arr,
                 )
             )
 

@@ -107,7 +107,7 @@ class ActionMapper:
                 )
 
             if task is not None and task.package is not None:
-                if robot.position == task.pickup_position:
+                if robot.position == task.pickup_position or robot.position.manhattan_distance(task.pickup_position) <= 1:
                     robot.pick_up_package(task.package)
                     task.status = TaskStatus.IN_PROGRESS
                     return ActionResult(
@@ -133,7 +133,7 @@ class ActionMapper:
                 )
 
             if task is not None:
-                if robot.position == task.drop_position:
+                if robot.position == task.drop_position or robot.position.manhattan_distance(task.drop_position) <= 1:
                     robot.drop_package()
                     task.status = TaskStatus.COMPLETED
                     robot.increment_tasks_completed()
@@ -141,7 +141,7 @@ class ActionMapper:
                         action=action,
                         is_valid=True,
                         dropped_package=True,
-                        message=f"Successfully dropped package at destination {robot.position}.",
+                        message=f"Delivered package '{task.package.package_id}' to destination.",
                     )
 
             return ActionResult(
