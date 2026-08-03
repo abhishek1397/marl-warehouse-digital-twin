@@ -21,6 +21,8 @@ jobs:
   python-test:
     name: Python Test Suite & MARL Validation
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
 
     steps:
       - name: Checkout Repository
