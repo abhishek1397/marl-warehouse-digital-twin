@@ -1,0 +1,13 @@
+# Development Override Configuration for Live Code Reloading
+services:
+  backend:
+    environment:
+      - DEBUG=true
+    volumes:
+      - ./backend/app:/app/backend/app
+      - ./simulator:/app/simulator
+      - ./marl:/app/marl
+
+  frontend:
+    environment:
+      - NODE_ENV=development
