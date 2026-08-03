@@ -6,6 +6,7 @@ import { AlgorithmsPage } from '../pages/AlgorithmsPage';
 import { ExperimentsPage } from '../pages/ExperimentsPage';
 import { ResearchPage } from '../pages/ResearchPage';
 import { DocumentationPage } from '../pages/DocumentationPage';
+import { DataStructuresPage } from '../pages/DataStructuresPage';
 import { AboutPage } from '../pages/AboutPage';
 
 export const AppRouter: React.FC = () => {
@@ -16,6 +17,7 @@ export const AppRouter: React.FC = () => {
       <Route path="/algorithms" element={<AlgorithmsPage />} />
       <Route path="/experiments" element={<ExperimentsPage />} />
       <Route path="/research" element={<ResearchPage />} />
+      <Route path="/dsa" element={<DataStructuresPage />} />
       <Route path="/docs" element={<DocumentationPage />} />
       <Route path="/about" element={<AboutPage />} />
     </Routes>

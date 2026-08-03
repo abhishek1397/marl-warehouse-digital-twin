@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Bot, Cpu, Activity, Play, FileText, Info, Menu, X, Github } from 'lucide-react';
+import { Bot, Cpu, Activity, Play, FileText, Info, Menu, X, Github, Database } from 'lucide-react';
 import { Container } from './Container';
 
 const navItems = [
@@ -9,6 +9,7 @@ const navItems = [
   { name: 'Algorithms', path: '/algorithms', icon: Cpu },
   { name: 'Experiments', path: '/experiments', icon: Activity },
   { name: 'Research', path: '/research', icon: FileText },
+  { name: 'Data Structures', path: '/dsa', icon: Database },
   { name: 'Docs', path: '/docs', icon: FileText },
   { name: 'About', path: '/about', icon: Info },
 ];
