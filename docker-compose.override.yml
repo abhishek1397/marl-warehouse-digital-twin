@@ -1,6 +1,8 @@
 # Development Override Configuration for Live Code Reloading
 services:
   backend:
+    ports:
+      - "8000:8000"
     environment:
       - DEBUG=true
     volumes:
@@ -9,5 +11,7 @@ services:
       - ./marl:/app/marl
 
   frontend:
+    ports:
+      - "3000:80"
     environment:
       - NODE_ENV=development
