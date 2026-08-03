@@ -1,5 +1,7 @@
 # Warehouse Digital Twin — AI MARL Robotics Research Platform
 
+[![CI Pipeline](https://github.com/abhishek1397/marl-warehouse-digital-twin/actions/workflows/ci.yml/badge.svg)](https://github.com/abhishek1397/marl-warehouse-digital-twin/actions/workflows/ci.yml)
+
 A production-grade Multi-Agent Reinforcement Learning (MARL) research platform for autonomous multi-robot warehouse fleet coordination, featuring PPO, IPPO, MAPPO (MLP Critic), Spatial MAPPO (2D CNN Centralized Critic), Potential-Based Reward Shaping (PBRS), and Dynamic Action Masking (DAM).
 
 ---
@@ -77,3 +79,13 @@ npm run dev
 # Run full Pytest suite across all algorithms & simulator
 C:\Users\OMEN\anaconda3\envs\marl_env\python.exe -m pytest
 ```
+
+---
+
+## Continuous Integration (CI) Pipeline
+
+Automated testing and build validation powered by GitHub Actions ([.github/workflows/ci.yml](file:///d:/PG/summer%20training/MARL/.github/workflows/ci.yml)):
+- **Python Test Suite**: Setup Python 3.11 with `pip` caching, executes pytest suite across `backend/app`, `marl`, and `simulator`, and uploads XML coverage reports.
+- **Frontend Build Verification**: Setup Node.js 20 with `npm` caching, compiles TypeScript and Vite production bundle (`dist/`).
+- **Docker Image Build**: Compiles `backend/Dockerfile`, `frontend/Dockerfile`, and `nginx/Dockerfile` images and validates `docker compose config` syntax.
+
